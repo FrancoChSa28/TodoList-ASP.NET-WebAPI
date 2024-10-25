@@ -12,44 +12,34 @@ namespace TodoApi.Models
         }
 
         public AMCDbContext(DbContextOptions<AMCDbContext> options)
-            : base(options)
-        {
-        }
+        : base(options) { }
 
         public virtual DbSet<Activity> Activities { get; set; }
         public virtual DbSet<User> Users { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseMySql("server=localhost;port=3307;user=root;password=todolist;database=todolist", Microsoft.EntityFrameworkCore.ServerVersion.Parse("10.4.17-mariadb"));
-            }
-        }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasCharSet("utf8")
-                .UseCollation("utf8_swedish_ci");
+            //modelBuilder.HasCharSet("utf8")
+            //    .UseCollation("utf8_swedish_ci");
 
             modelBuilder.Entity<Activity>(entity =>
             {
-                entity.ToTable("activity");
+                //entity.ToTable("activity");
 
-                entity.Property(e => e.Id).HasColumnType("int(10) unsigned").ValueGeneratedOnAdd();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
-                entity.Property(e => e.Name)
-                    .IsRequired()
-                    .HasMaxLength(50);
+                //entity.Property(e => e.Id).HasColumnType("int(10) unsigned").ValueGeneratedOnAdd();
 
-                entity.Property(e => e.When).HasColumnType("datetime");
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+
+                //entity.Property(e => e.When).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<User>(entity =>
             {
-                entity.ToTable("user");
+                //entity.ToTable("user");
 
-                entity.Property(e => e.Id).HasMaxLength(13);
+                //entity.Property(e => e.Id).HasMaxLength(13);
 
                 entity.Property(e => e.Password)
                     .IsRequired()
@@ -60,7 +50,7 @@ namespace TodoApi.Models
                     .HasMaxLength(24);
             });
 
-            OnModelCreatingPartial(modelBuilder);
+            //OnModelCreatingPartial(modelBuilder);
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

@@ -9,7 +9,7 @@ namespace TodoApi.Models
     public partial class Activity
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public uint Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         public DateTime When { get; set; }
     }

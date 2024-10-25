@@ -15,10 +15,12 @@ namespace TodoApi.Controllers
     [Route("[controller]")]
     public class TodoApiController : ControllerBase
     {
+        private readonly AMCDbContext _context;
         private readonly ILogger<TodoApiController> _logger;
 
-        public TodoApiController(ILogger<TodoApiController> logger)
+        public TodoApiController(ILogger<TodoApiController> logger, AMCDbContext context)
         {
+            _context = context;
             _logger = logger;
         }
 
@@ -27,8 +29,7 @@ namespace TodoApi.Controllers
         [Authorize(Roles = "user")]
         public IActionResult Get()
         {
-            var db = new AMCDbContext();
-            var activities = db.Activities.Select(s => s).OrderBy(a => a.When);
+            var activities = _context.Activities.Select(s => s).OrderBy(a => a.When);
             if (!activities.Any()) return NoContent();
             return Ok(activities);
         }
@@ -38,8 +39,7 @@ namespace TodoApi.Controllers
         [Authorize(Roles = "user")]
         public IActionResult Get(uint id)
         {
-            var db = new AMCDbContext();
-            var activity = db.Activities.Where(s => s.Id == id).Select(s => s);
+            var activity = _context.Activities.Where(s => s.Id == id).Select(s => s);
             if (!activity.Any()) return NotFound();
             return Ok(activity);
         }
@@ -49,28 +49,26 @@ namespace TodoApi.Controllers
         [Authorize(Roles = "user")]
         public IActionResult Post([FromBody] ActivityDTO Dto)
         {
-            var db = new AMCDbContext();
             Activity activity = new Activity();
             activity.Name = Dto.Name;
             activity.When = Dto.When;
-            db.Activities.Add(activity);
-            db.SaveChanges();
+            _context.Activities.Add(activity);
+            _context.SaveChanges();
             return StatusCode(201);
         }
 
         [HttpPut]
         [Route("activities/{id}")]
         [Authorize(Roles = "user")]
-        public IActionResult Put([FromBody] ActivityDTO Dto, uint id)
+        public IActionResult Put([FromBody] ActivityDTO Dto, int id)
         {
-            var db = new AMCDbContext();
-            var activity = db.Activities.Where(s => s.Id == id).Select(s => s);
+            var activity = _context.Activities.Where(s => s.Id == id).Select(s => s);
             if (!activity.Any()) return NotFound();
             var td = activity.First();
             td.Id = id;
             td.Name = Dto.Name;
             td.When = Dto.When;
-            db.SaveChanges();
+            _context.SaveChanges();
             return Ok();
         }
 
@@ -79,10 +77,9 @@ namespace TodoApi.Controllers
         [Authorize(Roles = "user")]
         public IActionResult Delete(uint id)
         {
-            var db = new AMCDbContext();
-            var activity = db.Activities.Find(id);
-            db.Activities.Remove(activity);
-            db.SaveChanges();
+            var activity = _context.Activities.Find(id);
+            _context.Activities.Remove(activity);
+            _context.SaveChanges();
             return Ok();
         }
 
@@ -91,8 +88,7 @@ namespace TodoApi.Controllers
         public IActionResult Login([FromBody] AccountDTO Dto)
         {
             if (Dto.userid == null || Dto.password == null) return BadRequest();
-            var db = new AMCDbContext();
-            var user = db.Users.Where(s => s.Id == Dto.userid).Select(s => s);
+            var user = _context.Users.Where(s => s.Id == Dto.userid).Select(s => s);
             if (!user.Any()) return Unauthorized();
             var u = user.First();
             
@@ -113,13 +109,13 @@ namespace TodoApi.Controllers
             string salt = hashedAndSalt.salt;
             string hash = hashedAndSalt.hash;  
 
-            var db = new AMCDbContext();
-            db.Users.Add(new User(){
+            //var db = new AMCDbContext();
+            _context.Users.Add(new User(){
                 Id = Dto.userid,
                 Password = hash,
                 Salt = salt,
             });
-            db.SaveChanges();
+            _context.SaveChanges();
             return StatusCode(201);
         }
 
